@@ -1,0 +1,15 @@
+[package]
+name = "pyrustyusn"
+version = "0.1.0"
+authors = ["Matthew Seyer - Github: https://github.com/forensicmatt - Twitter: @forensic_matt"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+rusty_usn = {git = "https://github.com/forensicmatt/RustyUsn.git", branch = "master"}
+pyo3 = {version = "0.6.0", features = ["extension-module"]}
+pyo3-file = "0.2.0"
