@@ -1,4 +1,4 @@
-use rusty_usn::record::UsnEntry;
+use rusty_usn::record::{UsnRecord, UsnEntry};
 use rusty_usn::usn::{UsnParser, IntoIterFileChunks};
 
 // Python Libs
@@ -124,8 +124,34 @@ fn record_to_pydict(entry: UsnEntry, py: Python) -> PyResult<&PyDict> {
     let pyrecord = PyDict::new(py);
 
     pyrecord.set_item("_offset", entry.offset)?;
-    // pyrecord.set_item("timestamp", format!("{}", record.timestamp))?;
-    // pyrecord.set_item("data", record.data)?;
+    match entry.record {
+        UsnRecord::V2(usn_v2) => {
+            pyrecord.set_item("record_length", usn_v2.record_length)?;
+            pyrecord.set_item("major_version", usn_v2.major_version)?;
+            pyrecord.set_item("minor_version", usn_v2.minor_version)?;
+
+            let file_reference= PyDict::new(py);
+            file_reference.set_item("entry", usn_v2.file_reference.entry)?;
+            file_reference.set_item("sequence", usn_v2.file_reference.sequence)?;
+            pyrecord.set_item("file_reference", file_reference)?;
+
+            let parent_reference= PyDict::new(py);
+            parent_reference.set_item("entry", usn_v2.parent_reference.entry)?;
+            parent_reference.set_item("sequence", usn_v2.parent_reference.sequence)?;
+            pyrecord.set_item("parent_reference", parent_reference)?;
+
+            pyrecord.set_item("usn", usn_v2.usn)?;
+            pyrecord.set_item("timestamp", format!("{}", usn_v2.timestamp))?;
+            pyrecord.set_item("reason", format!("{}", usn_v2.reason))?;
+            pyrecord.set_item("source_info", format!("{}", usn_v2.source_info))?;
+            pyrecord.set_item("security_id", usn_v2.security_id)?;
+            pyrecord.set_item("file_attributes", usn_v2.file_attributes)?;
+            pyrecord.set_item("file_name_length", usn_v2.file_name_length)?;
+            pyrecord.set_item("file_name_offset", usn_v2.file_name_offset)?;
+            pyrecord.set_item("file_name", usn_v2.file_name)?;
+        }
+    }
+
     Ok(pyrecord)
 }
 
