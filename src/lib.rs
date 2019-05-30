@@ -53,7 +53,7 @@ impl FileOrFileLike {
 
 
 #[pyclass]
-/// PyUsnParser(self, path_or_file_like, /)
+/// PyUsnParser(self, path_or_file_like)
 /// --
 ///
 /// Returns an instance of the parser.
@@ -90,10 +90,10 @@ impl PyUsnParser {
         Ok(())
     }
 
-    // /// records(self, /)
-    // /// --
-    // ///
-    // /// Returns an iterator that yields records.
+    /// records(self)
+    /// --
+    ///
+    /// Returns PyRecordsIterator that yields records.
     fn records(&mut self) -> PyResult<PyRecordsIterator> {
         self.records_iterator()
     }
@@ -167,6 +167,10 @@ fn record_to_pyobject(
 
 
 #[pyclass]
+/// PyRecordsIterator(self)
+/// --
+///
+/// An iterator that yields USN dictionaries.
 pub struct PyRecordsIterator {
     inner: IntoIterFileChunks<Box<dyn ReadSeek>>,
     records: Option<Vec<UsnEntry>>
@@ -207,6 +211,13 @@ impl PyIterProtocol for PyRecordsIterator {
 
 
 #[pymodule]
+/// pyrustyusn
+/// --
+/// CLASSES
+/// 
+/// help(pyrustyusn.PyUsnParser)
+/// help(pyrustyusn.PyRecordsIterator)
+/// 
 fn pyrustyusn(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyUsnParser>()?;
     m.add_class::<PyRecordsIterator>()?;
