@@ -1,8 +1,12 @@
-use rusty_usn::usn::UsnParser;
+use rusty_usn::record::UsnEntry;
+use rusty_usn::usn::{UsnParser, IntoIterFileChunks};
 
 // Python Libs
 use pyo3::prelude::*;
+use pyo3::types::PyDict;
+use pyo3::PyIterProtocol;
 use pyo3::types::PyString;
+use pyo3::exceptions::RuntimeError;
 
 // Python Filelike
 use pyo3_file::PyFileLikeObject;
@@ -85,12 +89,101 @@ impl PyUsnParser {
 
         Ok(())
     }
+
+    // /// records(self, /)
+    // /// --
+    // ///
+    // /// Returns an iterator that yields records.
+    fn records(&mut self) -> PyResult<PyRecordsIterator> {
+        self.records_iterator()
+    }
+}
+
+impl PyUsnParser {
+    fn records_iterator(&mut self) -> PyResult<PyRecordsIterator> {
+        let inner = match self.inner.take() {
+            Some(inner) => inner,
+            None => {
+                return Err(PyErr::new::<RuntimeError, _>(
+                    "PyUsnParser can only be used once",
+                ));
+            }
+        };
+
+        Ok(
+            PyRecordsIterator {
+                inner: inner.into_chunk_iterator(),
+                records: None
+            }
+        )
+    }
+}
+
+
+fn record_to_pydict(entry: UsnEntry, py: Python) -> PyResult<&PyDict> {
+    let pyrecord = PyDict::new(py);
+
+    pyrecord.set_item("_offset", entry.offset)?;
+    // pyrecord.set_item("timestamp", format!("{}", record.timestamp))?;
+    // pyrecord.set_item("data", record.data)?;
+    Ok(pyrecord)
+}
+
+fn record_to_pyobject(
+    r: UsnEntry,
+    py: Python,
+) -> PyResult<PyObject> {
+    match record_to_pydict(r, py) {
+        Ok(dict) => Ok(dict.to_object(py)),
+        Err(e) => Ok(e.to_object(py)),
+    }
+}
+
+
+#[pyclass]
+pub struct PyRecordsIterator {
+    inner: IntoIterFileChunks<Box<dyn ReadSeek>>,
+    records: Option<Vec<UsnEntry>>
+}
+
+impl PyRecordsIterator {
+    fn next(&mut self) -> PyResult<Option<PyObject>> {
+        let gil = Python::acquire_gil();
+        let py = gil.python();
+
+        loop {
+            if let Some(record) = self.records.as_mut().and_then(Vec::pop) {
+                return record_to_pyobject(record, py).map(Some);
+            }
+
+            let data_chunk = self.inner.next();
+
+            match data_chunk {
+                None => return Ok(None),
+                Some(data_chunk) => {
+                    let record_iterator = data_chunk.get_record_iterator();
+                    self.records = Some(record_iterator.collect());
+                }
+            }
+        }
+    }
+}
+
+#[pyproto]
+impl PyIterProtocol for PyRecordsIterator {
+    fn __iter__(slf: PyRefMut<Self>) -> PyResult<Py<PyRecordsIterator>> {
+        Ok(slf.into())
+    }
+    fn __next__(mut slf: PyRefMut<Self>) -> PyResult<Option<PyObject>> {
+        slf.next()
+    }
 }
 
 
 #[pymodule]
-fn evtx(_py: Python, m: &PyModule) -> PyResult<()> {
+fn pyrustyusn(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyUsnParser>()?;
+    m.add_class::<PyRecordsIterator>()?;
 
     Ok(())
 }
