@@ -1,3 +1,4 @@
+[![Build Status](https://dev.azure.com/matthewseyer/matthewseyer/_apis/build/status/forensicmatt.PyRustyUsn?branchName=master)](https://dev.azure.com/matthewseyer/matthewseyer/_build/latest?definitionId=2&branchName=master)
 # PyRustyUsn
 Python bindings for RustyUsn.
 
