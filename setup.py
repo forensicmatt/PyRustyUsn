@@ -21,9 +21,9 @@ install_requires = ["setuptools-rust"]
 setup(
     name="pyrustyusn",
     version="0.1.0",
-    author="Matthew Seyer",
     classifiers=[
         "Intended Audience :: Developers",
+        "Development Status :: 3 - Alpha",
         "Programming Language :: Python",
         "Programming Language :: Rust",
         "Operating System :: POSIX",
