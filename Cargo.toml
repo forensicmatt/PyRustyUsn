@@ -1,10 +1,8 @@
 [package]
 name = "pyrustyusn"
 version = "0.1.0"
-authors = ["Matthew Seyer - Github: https://github.com/forensicmatt - Twitter: @forensic_matt"]
+authors = ["Matthew Seyer"]
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
 crate-type = ["cdylib"]
