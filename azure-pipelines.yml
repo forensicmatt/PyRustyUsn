@@ -32,7 +32,7 @@ jobs:
       displayName: 'pytest'
     
     - script: |
-        docker run -v $(Build.SourcesDirectory):/io konstin2/pyo3-pack publish -u forensic_matt -p $(pypi.password)
+        docker run -v $(Build.SourcesDirectory):/io konstin2/pyo3-pack publish -u forensic_matt -p $(pypi.password) --interpreter python
       displayName: "Upload to PyPi"
       condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
 
@@ -88,7 +88,7 @@ jobs:
       displayName: 'pytest'
     
     - script: |
-        pyo3-pack publish -u forensic_matt -p $(pypi.password)
+        pyo3-pack publish -u forensic_matt -p $(pypi.password) --interpreter python
       displayName: "Upload to PyPi"
       condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
 
@@ -145,6 +145,6 @@ jobs:
       displayName: 'pytest'
     
     - script: |
-        pyo3-pack publish -u forensic_matt -p $(pypi.password)
+        pyo3-pack publish -u forensic_matt -p $(pypi.password) --interpreter python
       displayName: "Upload to PyPi"
       condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
