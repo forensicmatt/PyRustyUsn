@@ -20,7 +20,7 @@ install_requires = ["setuptools-rust"]
 
 setup(
     name="pyrustyusn",
-    version="0.1.0",
+    version="0.2.0",
     classifiers=[
         "Intended Audience :: Developers",
         "Development Status :: 3 - Alpha",
@@ -44,4 +44,7 @@ setup(
     install_requires=install_requires,
     include_package_data=True,
     zip_safe=False,
+    scripts=[
+        'scripts/usn_dump.py',
+    ]
 )
