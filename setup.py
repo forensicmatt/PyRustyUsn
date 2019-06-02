@@ -20,7 +20,7 @@ install_requires = ["setuptools-rust"]
 
 setup(
     name="pyrustyusn",
-    version="0.2.0",
+    version="0.3.0",
     classifiers=[
         "Intended Audience :: Developers",
         "Development Status :: 3 - Alpha",
