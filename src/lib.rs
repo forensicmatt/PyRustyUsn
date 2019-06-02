@@ -65,7 +65,7 @@ pub struct PyUsnParser {
 #[pymethods]
 impl PyUsnParser {
     #[new]
-    fn new(obj: &PyRawObject, path_or_file_like: PyObject) -> PyResult<()> {
+    fn new(obj: &PyRawObject, source_description: String, path_or_file_like: PyObject) -> PyResult<()> {
         let file_or_file_like = FileOrFileLike::from_pyobject(path_or_file_like)?;
 
         let boxed_read_seek = match file_or_file_like {
@@ -78,6 +78,7 @@ impl PyUsnParser {
 
         // Create our usn parser
         let usn_parser = UsnParser::from_read_seek(
+            source_description,
             boxed_read_seek
         )?;
 
@@ -123,6 +124,7 @@ impl PyUsnParser {
 fn record_to_pydict(entry: UsnEntry, py: Python) -> PyResult<&PyDict> {
     let pyrecord = PyDict::new(py);
 
+    pyrecord.set_item("_source", entry.source)?;
     pyrecord.set_item("_offset", entry.offset)?;
     match entry.record {
         UsnRecord::V2(usn_v2) => {

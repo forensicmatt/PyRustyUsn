@@ -50,9 +50,11 @@ Parse USN records from a file, extracted unallocated, or volume handle (file sys
 optional arguments:
   -h, --help            show this help message and exit
   -s SOURCE, --source SOURCE
-                        The USN Journal or a logical volume (logical volume
-                        handle: \\.\C: or
-                        \\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy6).
+                        The USN Journal, directory, or a logical volume
+                        (logical volume handle: \\.\C: or
+                        \\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy6). If
+                        source is a directory, it will recurse through the
+                        folders looking for files that end with $J.
   -v, --is_volume       The source is a volume handle.
   --debug {ERROR,WARN,INFO,DEBUG}
                         Debug level [default=ERROR]

@@ -7,7 +7,7 @@ import argparse
 import pyrustyusn
 
 VALID_DEBUG_LEVELS = ["ERROR", "WARN", "INFO", "DEBUG"]
-__VERSION__ = "0.1.0"
+__VERSION__ = "0.2.0"
 
 RE_WIN_LOGICAL = re.compile(r"\\\\[.]\\[a-zA-Z]:", re.I)
 RE_WIN_VOLSHAD = re.compile(r"\\\\\?\\GLOBALROOT\\Device\\HarddiskVolumeShadowCopy\d{1,3}", re.I)
@@ -35,8 +35,9 @@ def get_arguments():
         dest="source",
         action="store",
         required=True,
-        help="The USN Journal or a logical volume (logical volume handle: \\\\.\\C: "
-             "or \\\\?\\GLOBALROOT\\Device\\HarddiskVolumeShadowCopy6)."
+        help="The USN Journal, directory, or a logical volume (logical volume handle: \\\\.\\C: "
+             "or \\\\?\\GLOBALROOT\\Device\\HarddiskVolumeShadowCopy6). If source is a directory, "
+             "it will recurse through the folders looking for files that end with $J."
     )
     arguments.add_argument(
         "-v", "--is_volume",
@@ -71,6 +72,17 @@ def enumerate_volume_handle(source):
     return False
 
 
+def process_dir(directory, options):
+    for subdir, dirs, files in os.walk(directory):
+        for file in files:
+            file_path = subdir + os.sep + file
+            if file_path.lower().endswith("$j"):
+                process_file(
+                    file_path,
+                    options
+                )
+
+
 def process_file(file_location, options):
     with open(file_location, "rb") as fh:
         process_io_handle(
@@ -80,7 +92,7 @@ def process_file(file_location, options):
 
 def process_io_handle(location, io_handle, options):
     logging.info("Processing: {}".format(location))
-    parser = pyrustyusn.PyUsnParser(io_handle)
+    parser = pyrustyusn.PyUsnParser(location, io_handle)
     for record in parser.records():
         print(ujson.dumps(record))
 
@@ -141,9 +153,9 @@ def main():
         if os.path.isfile(options.source):
             process_file(options.source, options)
         elif os.path.isdir(options.source):
-            raise("Directory source is not yet supported.")
+            process_dir(options.source, options)
         else:
-            raise("Source is not a directory or a file.")
+            raise(Exception("Source is not a directory or a file."))
 
 
 class FileInfo(object):
